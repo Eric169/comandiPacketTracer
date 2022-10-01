@@ -1,0 +1,20 @@
+//switch server
+
+en
+conf t
+vtp mode server
+vtp domain azienda
+vtp password speriamobene
+
+//se voglio il client 
+vtp mode client
+
+//configurazione router
+//10 è l'ID della VLAN, l'address è il default getaway
+//questo vale per tutte le VLAN
+
+configure terminal
+encapsulation dot1Q 10
+ip address 192.168.1.254 255.255.255.0
+
+
