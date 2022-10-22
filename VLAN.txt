@@ -14,7 +14,10 @@ vtp mode client
 //questo vale per tutte le VLAN
 
 configure terminal
-encapsulation dot1Q 10
-ip address 192.168.1.254 255.255.255.0
+interface FastEthernet0/0.30
+encapsulation dot1Q 30
+ip address 192.168.0.192 255.255.255.224
+ex
+ex
 
 
