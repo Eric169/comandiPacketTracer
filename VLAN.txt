@@ -9,13 +9,20 @@ vtp password speriamobene
 //se voglio il client 
 vtp mode client
 
+//dopo che l'ho fatto vado nel server e aggiungo le VLAN
+//in VLAN database
+//poi configuro le porte collegate agli switch come trunk
+//poi ogni porta dei client collegata ai PC va assegnata con la VLAN giusta
+
+//se voglio che le VLAN comunichino tra loro devo aggiungere un router che dovrà avere la porta collegata allo switch settata a trunk
+
 //configurazione router
 //10 è l'ID della VLAN, l'address è il default getaway
 //questo vale per tutte le VLAN
 
 configure terminal
-interface FastEthernet0/0.30
-encapsulation dot1Q 30
+interface FastEthernet0/0.10
+encapsulation dot1Q 10
 ip address 192.168.0.192 255.255.255.224
 ex
 ex

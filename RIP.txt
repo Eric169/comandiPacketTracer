@@ -1,3 +1,5 @@
+//devo dargli le reti che vede
+
 en
 configure terminal
 router rip
