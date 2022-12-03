@@ -1,0 +1,10 @@
+//access-list 1 deny ipRete wildcard 
+//i pacchetti da tutti gli indirizzi 192.168.1.x non vanno
+access-list 1 deny 192.168.1.0 0.0.0.255
+
+//permetto l'accesso a tutti gli elementi della lista
+access-list 1 permit any
+
+//se voglio togliere solo il pc 192.168.1.1
+access-list 1 deny 192.168.1.1 0.0.0.0
+
