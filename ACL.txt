@@ -8,3 +8,25 @@ access-list 1 permit any
 //se voglio togliere solo il pc 192.168.1.1
 access-list 1 deny 192.168.1.1 0.0.0.0
 
+
+//metti in se la rete da deny è sulla fastEthernet, sennò out
+int fa0/0
+ip access-group 1 in
+
+
+//ACL estesa, posso specificare il protocollo e la porta da bloccare
+//qui il primo host è il pc, il secondo il server
+//eq 80 dice la porta
+//blocca le richieste tcp
+access-list 110 permit tcp host 192.168.2.2 host 192.168.3.3 eq 80
+
+//poi rimuovo tutti quelli della rete perchè voglio che rimanga solo quel pc
+access-list 110 deny tcp 192.168.2.0 0.0.0.255 host 192.168.3.3 eq 80
+
+//alla fine fai sempre questo
+access-list 110 permit ip any any
+
+
+
+
+

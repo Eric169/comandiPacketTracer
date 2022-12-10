@@ -1,0 +1,12 @@
+//nei due router installo i pacchetti per la sicurezza
+en
+conf t
+license boot module c2900 technology-package securityk9
+yes
+
+//poi salvo le configurazioni e reload
+end
+copy running-config startup-config
+
+reload
+
