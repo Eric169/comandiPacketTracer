@@ -10,6 +10,7 @@ copy running-config startup-config
 
 reload
 
+//VPN SITE TO SITE
 
 //prima permetto il traffico tra le due reti
 access-list 110 permit ip 192.168.1.0 0.0.0.255 192.168.2.0 0.0.0.255
@@ -42,3 +43,55 @@ crypto map VPN-MAP
 show crypto isakmp policy
 //se voglio vedere la map
 show crypto map
+
+
+//REMOTE ACCESS VPN
+
+//Definiamo ora un pool locale di indirizzi riconoscibili dalla nostra vpn, significa che poi il sistema di autenticazione riconoscendo questo set di indirizzi permetterà loro di accedere. PoolVPN è il nome del pool, case-sensitive.
+en
+conf t
+ip local pool PoolVPN 192.168.0.1 192.168.0.15
+
+//definiamo un nuovo model che gestirà l'autenticazione
+aaa new-model
+
+//definiamo l’user che farà riferimento al database locale occhio UserVPN è case-sensitive
+aaa authentication login UserVPN local
+
+//definiamo il gruppo dei dispositivi autorizzati sempre fecendo riferimento al database locale. Definiremo infine l’username e pa password dell’utente
+aaa authorization network GroupVPN local
+
+//username=lol password=password
+username lol secret password
+
+//definiamo la policy di gestione della VPN
+crypto isakmp policy 100
+encryption aes 256
+hash sha
+authentication pre-share
+group 5
+lifetime 3600
+exit
+
+//configuriamo il client 
+crypto isakmp client configuration group GroupVPN
+key passwordgroup
+pool PoolVPN
+exit
+
+//definisco il trasform-set VPN
+crypto ipsec transform-set SetVPN esp-aes esp-sha-hmac
+crypto dynamic-map DynamicVPN 100
+set transform-set SetVPN
+reverse-route
+exit
+
+//genero un'altra map statica
+crypto ipsec transform-set SetVPN esp-aes esp-sha-hmac
+crypto map StaticMap client authentication list UserVPN
+crypto map StaticMap isakmp authorization list GroupVPN
+crypto map StaticMap 20 ipsec-isakmp dynamic DynamicVPN
+
+//configurare l’interfaccia seriale che costituisce la porta del tunnel a cui associamo la static map appena generata
+int s0/3/0
+crypto map StaticMap
