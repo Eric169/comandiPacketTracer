@@ -13,6 +13,8 @@ reload
 //VPN SITE TO SITE
 
 //prima permetto il traffico tra le due reti
+en
+conf t
 access-list 110 permit ip 192.168.1.0 0.0.0.255 192.168.2.0 0.0.0.255
 //configuro i parametri per la policy identificati dal numero 10
 crypto isakmp policy 10
@@ -25,18 +27,18 @@ group 2
 //Generata la policy configuro la chiave di crittografia condivisa con il router dall’altra parte della rete
 R2 (la chiave sarà: cisco)
 ex
-crypto isakmp key cisco address 10.0.0.2
+crypto isakmp key cisco address 11.0.0.2
 //definire il transform-set VPN-set che utilizzerà il protocollo ESP con cifratura di tipo 3des e autenticazione SHA
 crypto ipsec transform-set VPN-SET esp-3des esp-sha-hmac
 //genererò quindi una nuova map con numero sequenziale nel mio caso pari a 10 ed indicando che sarà utilizzato il protocollo ipsec-isakmp.
-crypto map VPN-MMAP 10 ipsec-isakmp
+crypto map VPN-MAP 10 ipsec-isakmp
 //inserisco una descrizione, l’ip a cui è connessa la vpn, i match address, l'IP non è quello reale ma è quello che esce dal router lontano
 description VPN connection to R2
-set peer 11.0.0.2
+set peer 10.0.0.2
 set transform-set VPN-SET
 match address 110
 //Infine applica la map appena configurata all’interfaccia seriale di uscita del mio router R1
-interface Serial0/3/0
+interface Serial0/0/0
 crypto map VPN-MAP
 
 //se voglio vedere la configurazione 
@@ -46,6 +48,14 @@ show crypto map
 
 
 //REMOTE ACCESS VPN
+//prima scarico i pacchetti
+conf t
+license boot module c2900 technology-package securityk9
+yes
+exit
+copy running-config startup-config
+
+reload
 
 //Definiamo ora un pool locale di indirizzi riconoscibili dalla nostra vpn, significa che poi il sistema di autenticazione riconoscendo questo set di indirizzi permetterà loro di accedere. PoolVPN è il nome del pool, case-sensitive.
 en
@@ -87,7 +97,8 @@ reverse-route
 exit
 
 //genero un'altra map statica
-crypto ipsec transform-set SetVPN esp-aes esp-sha-hmac
+//crypto ipsec transform-set SetVPN esp-aes esp-sha-hmac
+crypto map StaticMap client configuration address respond
 crypto map StaticMap client authentication list UserVPN
 crypto map StaticMap isakmp authorization list GroupVPN
 crypto map StaticMap 20 ipsec-isakmp dynamic DynamicVPN
