@@ -13,33 +13,34 @@ reload
 //VPN SITE TO SITE
 
 //prima permetto il traffico tra le due reti
+//nella access-list si mette sorgente destinazione, la sorgente è la rete del router
 en
 conf t
-access-list 110 permit ip 192.168.1.0 0.0.0.255 192.168.2.0 0.0.0.255
+access-list 110 permit ip 192.168.2.0 0.0.0.255 192.168.0.0 0.0.0.255
 //configuro i parametri per la policy identificati dal numero 10
 crypto isakmp policy 10
 //imposto cifratura aes
-encryption aes
+encryption aes 128
 //metodo di autenticazione pre-share
 authentication pre-share
 //associo la policy a un gruppo
-group 2
+group 5
 //Generata la policy configuro la chiave di crittografia condivisa con il router dall’altra parte della rete
 R2 (la chiave sarà: cisco)
 ex
 crypto isakmp key cisco address 11.0.0.2
 //definire il transform-set VPN-set che utilizzerà il protocollo ESP con cifratura di tipo 3des e autenticazione SHA
-crypto ipsec transform-set VPN-SET esp-3des esp-sha-hmac
+crypto ipsec transform-set VPN-SET esp-aes 256 esp-sha-hmac
 //genererò quindi una nuova map con numero sequenziale nel mio caso pari a 10 ed indicando che sarà utilizzato il protocollo ipsec-isakmp.
-crypto map VPN-MAP 10 ipsec-isakmp
+crypto map VPN-LAZIO 10 ipsec-isakmp
 //inserisco una descrizione, l’ip a cui è connessa la vpn, i match address, l'IP non è quello reale ma è quello che esce dal router lontano
 description VPN connection to R2
-set peer 10.0.0.2
+set peer 11.0.0.2
 set transform-set VPN-SET
-match address 110
+match address 111
 //Infine applica la map appena configurata all’interfaccia seriale di uscita del mio router R1
-interface Serial0/0/0
-crypto map VPN-MAP
+interface Serial0/0/1
+crypto map VPN-MANTOVA
 
 //se voglio vedere la configurazione 
 show crypto isakmp policy
