@@ -1,0 +1,50 @@
+en
+conf t
+int fastEthernet0/0
+ip nat inside
+no shutdown
+exit
+
+interface fastEthernet1/0
+ip nat outside
+no shutdown
+ip nat inside source static 192.168.0.1 200.100.50.254
+do wr
+
+//per verificare vai su simulation poi vai avanti e clicchi il pacchetto sul router,
+//da li puoi vedere insourcing e outsourcing in cui gli ip di source devono essere diversi
+
+//se non voglio mettere l'indirizzo a mano gli posso dare un pool => NAT Dinamico
+en
+conf t
+ip nat pool internetworking 20.100.50.1 20.100.50.20 netmask 255.255.255.0
+access-list 11 permit 10.0.0.0 0.255.255.255
+ip nat inside source list 11 pool internetworking
+int fastEthernet0/0
+ip nat inside
+no shutdown
+exit
+//interface con la porta esterna
+interface serial2/0
+ip nat outside
+no shutdown
+exit
+do wr
+
+//anche qua per controllare stessa cosa
+
+//per fare il PAT
+en
+conf t
+access-list 1 permit 192.168.1.0 0.0.0.255
+ip nat inside source list 1 int se2/0 overload
+int fastEthernet0/0
+ip nat inside
+no shutdown
+exit
+//interface con la porta esterna
+interface serial2/0
+ip nat outside
+no shutdown
+exit
+do wr
