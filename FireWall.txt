@@ -1,0 +1,80 @@
+//Con ASA
+//si configura la parte outside senza probemi a mano
+//generazione VLAN 1
+//prima rimuovo gli ip e dhcp
+conf t
+interface vlan 1
+no ip address
+no dhcpd address 192.158.1.5-192.168.1.35 inside
+
+//inizio a configurare
+//assegno virtualmente ip all'interfaccia del firewall. La accendo e la chiamo inside.
+//infine dichiaro l'identificativo di sicurezza di quella parte di rete. 100 perchè è interna
+interface vlan 1
+ip address 192.168.1.1 255.255.255.0
+no shutdown
+nameif inside
+security-level 100
+ex
+
+//generazione VLAN 2
+//la nomino outside con livello di sicurezza minimo (0)
+interface vlan 2
+ip address 203.1.1.2 255.255.255.0
+no shutdown
+nameif outside
+security-level 0
+ex
+
+//devo controllare che la vlan1 sia dalla parte inside e la vlan2 nella parte outside
+//se non è così li switcho
+int ethernet 0/0
+switchport access vlan 1
+ex
+int ethernet 0/1
+switchport access vlan 2
+ex
+
+//configuro DHCP e DNS e forzo una route verso l'indirizzo del router
+dhcpd address 192.168.1.5-192.168.1.6 inside
+dhcpd dns 172.200.0.2 interface inside
+route outside 0.0.0.0 0.0.0.0 203.1.1.1
+
+//configurazione del NAT
+object network LAN
+subnet 192.168.1.0 255.255.255.0
+nat (inside,outside) dynamic interface
+ex
+
+//imposto le regole nat sull'oggetto LAN
+conf t
+access-list 110 permit tcp any any
+access-list 110 permit ip any any
+access-group 110 in interface outside
+ex
+
+//se voglio vedere il NAT
+show nat
+
+//Creiamo la DMZ
+//inserisco una terza VLAN per gestirla
+//aggiungo il comando no forward interface vlan 1
+interface vlan 3
+no forward interface vlan 1
+ip address 192.168.0.1 255.255.255.0
+no shutdown
+nameif dmz
+security-level 50
+ex
+
+//Infine assegnamo all ethernet0/2, la vlan 3
+interface Ethernet0/2
+switchport access vlan 3
+ex
+
+//Infine assegnamo indirizzi statici al server della dmz
+object network WEBSERVER
+host 192.168.0.2
+nat (dmz,outside) static 203.1.1.2
+ex
+
